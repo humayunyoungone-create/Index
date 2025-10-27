@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Humayun Rashid - Appointment Booking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0891b2 0%, #06b6d4 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #0891b2;
+            margin-bottom: 5px;
+        }
+
+        .header h2 {
+            color: #dc2626;
+            margin: 10px 0;
+            font-size: 1.3em;
+        }
+
+        .doctor-info {
+            margin: 15px 0;
+            color: #333;
+        }
+
+        .chambers-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .chamber-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        .chamber-card h3 {
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+
+        .chamber-card p {
+            font-size: 0.9em;
+            margin: 3px 0;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .time-slot {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .time-slot:hover:not(.booked):not(.disabled) {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .time-slot.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .time-slot.booked {
+            background: #fecaca;
+            border-color: #dc2626;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .time-slot.disabled {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .appointment-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .appointment-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .serial-badge {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .appointment-info h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .appointment-info p {
+            color: #666;
+            font-size: 14px;
+            margin: 3px 0;
+        }
+
+        .chamber-badge {
+            display: inline-block;
+            background: #0891b2;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            width: auto;
+            margin-top: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+
+        .slots-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f0f4ff;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .slots-available {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .slots-booked {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 10px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .chambers-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 Dr. Humayun Rashid (Shakil)</h1>
+            <h2 style="color: #764ba2; margin: 10px 0;">ডা: হুমায়ুন রশিদ</h2>
+            <div class="doctor-info">
+                <p style="font-weight: 600; color: #0891b2;">MBBS, BMDC Reg. No: 123311</p>
+                <p>মেডিসিন, শিশুরোগ, চর্ম ও এলার্জি, বাত-ব্যথা রোগে অভিজ্ঞ</p>
+                <p style="margin-top: 10px;">📞 For Serial: 01608-763222</p>
+            </div>
+
+            <div class="chambers-info">
+                <div class="chamber-card">
+                    <h3>📍 Bismillah Drug House (Kalibari)</h3>
+                    <p>📅 Sunday, Tuesday</p>
+                    <p>🕔 5:00 PM - 8:00 PM</p>
+                </div>
+                <div class="chamber-card">
+                    <h3>📍 Smart Tech Pharmacy</h3>
+                    <p>📅 Saturday, Monday, Wednesday</p>
+                    <p>🕔 5:00 PM - 8:00 PM</p>
+                </div>
+                <div class="chamber-card">
+                    <h3>📍 Doctors Point (Center)</h3>
+                    <p>📅 Monday, Thursday</p>
+                    <p>🕖 7:00 PM - 9:00 PM</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📝 Book Your Appointment</h2>
+                
+                <div class="loading" id="loading">⏳ Booking appointment...</div>
+                
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label for="chamber">Select Chamber *</label>
+                        <select id="chamber" required>
+                            <option value="">-- Choose Chamber --</option>
+                            <option value="bismillah">Bismillah Drug House (Kalibari)</option>
+                            <option value="smarttech">Smart Tech Pharmacy</option>
+                            <option value="doctorspoint">Doctors Point (Center)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Select Date *</label>
+                        <select id="date" required disabled>
+                            <option value="">-- Select chamber first --</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Time Slot *</label>
+                        <div class="slots-info" id="slotsInfo" style="display: none;">
+                            <span class="slots-available">Available: <span id="availableCount">0</span></span>
+                            <span class="slots-booked">Booked: <span id="bookedCount">0</span></span>
+                        </div>
+                        <div class="time-slots" id="timeSlots">
+                            <p style="color: #999; text-align: center; padding: 20px;">Select chamber and date first</p>
+                        </div>
+                        <input type="hidden" id="selectedTime" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="patientName">Patient Name *</label>
+                        <input type="text" id="patientName" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number *</label>
+                        <input type="tel" id="phone" required pattern="[0-9]{11}" placeholder="01XXXXXXXXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Reason for Visit</label>
+                        <textarea id="reason" rows="2" placeholder="Brief description (optional)"></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" disabled>Book Appointment</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📋 Appointments</h2>
+                <div class="appointment-list" id="appointmentList">
+                    <div class="empty-state">
+                        No appointments booked yet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Google Apps Script URL
+        const GOOGLE_SCRIPT_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLhl86Un_GuXg6lFG3yZFtD8LMa1dany2m--k-U_0fRQQuTHrE1LFwxpDpgIgXOxh5gX3rytDhtM17jhIa5npQflEjS_RFNNBMQuqr1JBW3BmJy_qXYxQRNwj073WmgAOgdzd71UwMLi-PR99tKt23-PKXqXi5JDOcVl1SQbgrP9FFjXjW_64iLiauYvFSveesmQ9eMe6yjusJOtSgZsf9tSxS-pWN0FmZb8xDGf51tRWZzGvGwswRK4vy3nIO7q32lmmx6Yjq1UF9iKHWdFRyI0O6sT9g&lib=M1BIMosoDzwBTbw1hpRaRCeTIKtlida8w';
+        
+        const chambers = {
+            bismillah: {
+                name: 'Bismillah Drug House (Kalibari)',
+                days: [0, 2],
+                startTime: 17,
+                endTime: 20,
+                slotDuration: 9
+            },
+            smarttech: {
+                name: 'Smart Tech Pharmacy',
+                days: [6, 1, 3],
+                startTime: 17,
+                endTime: 20,
+                slotDuration: 9
+            },
+            doctorspoint: {
+                name: 'Doctors Point (Center)',
+                days: [1, 4],
+                startTime: 19,
+                endTime: 21,
+                slotDuration: 6
+            }
+        };
+
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        let appointments = [];
+        let selectedSlot = null;
+
+        function loadAppointments() {
+            const saved = localStorage.getItem('appointments');
+            if (saved) {
+                appointments = JSON.parse(saved);
+            }
+            renderAppointments();
+        }
+
+        function saveAppointments() {
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+        }
+
+        function generateTimeSlots(chamber, totalSlots = 20) {
+            const slots = [];
+            const config = chambers[chamber];
+            const totalMinutes = (config.endTime - config.startTime) * 60;
+            const interval = Math.floor(totalMinutes / totalSlots);
+
+            for (let i = 0; i < totalSlots; i++) {
+                const minutes = config.startTime * 60 + (i * interval);
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+                const time = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+                slots.push(time);
+            }
+            return slots;
+        }
+
+        function isSlotBooked(chamber, date, time) {
+            return appointments.some(apt => 
+                apt.chamber === chamber && 
+                apt.date === date && 
+                apt.time === time
+            );
+        }
+
+        function updateAvailableDates() {
+            const chamberSelect = document.getElementById('chamber');
+            const dateSelect = document.getElementById('date');
+            const chamber = chamberSelect.value;
+
+            dateSelect.innerHTML = '<option value="">-- Choose Date --</option>';
+            dateSelect.disabled = !chamber;
+
+            if (!chamber) return;
+
+            const config = chambers[chamber];
+            const dates = [];
+            const today = new Date();
+
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const dayOfWeek = date.getDay();
+
+                if (config.days.includes(dayOfWeek)) {
+                    const dateStr = date.toISOString().split('T')[0];
+                    const displayDate = `${dayNames[dayOfWeek]}, ${date.toLocaleDateString('en-GB')}`;
+                    dates.push({ value: dateStr, label: displayDate });
+                }
+            }
+
+            dates.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d.value;
+                option.textContent = d.label;
+                dateSelect.appendChild(option);
+            });
+        }
+
+        function updateTimeSlots() {
+            const chamber = document.getElementById('chamber').value;
+            const date = document.getElementById('date').value;
+            const slotsContainer = document.getElementById('timeSlots');
+            const slotsInfo = document.getElementById('slotsInfo');
+
+            if (!chamber || !date) {
+                slotsContainer.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Select chamber and date first</p>';
+                slotsInfo.style.display = 'none';
+                return;
+            }
+
+            const slots = generateTimeSlots(chamber);
+            let availableCount = 0;
+            let bookedCount = 0;
+
+            slotsContainer.innerHTML = '';
+            slotsInfo.style.display = 'flex';
+
+            slots.forEach(time => {
+                const slotDiv = document.createElement('div');
+                slotDiv.className = 'time-slot';
+                slotDiv.textContent = formatTime(time);
+
+                if (isSlotBooked(chamber, date, time)) {
+                    slotDiv.classList.add('booked');
+                    slotDiv.title = 'Already booked';
+                    bookedCount++;
+                } else {
+                    availableCount++;
+                    slotDiv.addEventListener('click', () => selectSlot(time, slotDiv));
+                }
+
+                slotsContainer.appendChild(slotDiv);
+            });
+
+            document.getElementById('availableCount').textContent = availableCount;
+            document.getElementById('bookedCount').textContent = bookedCount;
+            selectedSlot = null;
+            document.getElementById('selectedTime').value = '';
+            document.getElementById('submitBtn').disabled = true;
+        }
+
+        function selectSlot(time, element) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+
+            element.classList.add('selected');
+            selectedSlot = time;
+            document.getElementById('selectedTime').value = time;
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        function formatTime(time24) {
+            const [hours, minutes] = time24.split(':').map(Number);
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const hours12 = hours % 12 || 12;
+            return `${hours12}:${minutes.toString().padStart(2, '0')} ${period}`;
+        }
+
+        document.getElementById('chamber').addEventListener('change', () => {
+            updateAvailableDates();
+            updateTimeSlots();
+        });
+
+        document.getElementById('date').addEventListener('change', updateTimeSlots);
+
+        document.getElementById('appointmentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const chamber = document.getElementById('chamber').value;
+            const date = document.getElementById('date').value;
+            const time = document.getElementById('selectedTime').value;
+
+            if (isSlotBooked(chamber, date, time)) {
+                alert('This slot is already booked. Please select another time.');
+                return;
+            }
+
+            const serial = appointments.filter(a => a.chamber === chamber && a.date === date).length + 1;
+
+            const appointment = {
+                id: Date.now(),
+                chamber: chamber,
+                chamberName: chambers[chamber].name,
+                name: document.getElementById('patientName').value,
+                phone: document.getElementById('phone').value,
+                date: date,
+                time: time,
+                reason: document.getElementById('reason').value,
+                serial: serial
+            };
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+
+            // Send to Google Sheets
+            try {
+                const formData = new URLSearchParams();
+                formData.append('Serial_Number', serial);
+                formData.append('Patient_Name', appointment.name);
+                formData.append('Phone_Number', appointment.phone);
+                formData.append('Chamber', appointment.chamberName);
+                formData.append('Appointment_Date', appointment.date);
+                formData.append('Appointment_Time', formatTime(appointment.time));
+                formData.append('Reason_for_Visit', appointment.reason || 'N/A');
+
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData,
+                    mode: 'no-cors'
+                });
+
+                console.log('Data sent to Google Sheets');
+            } catch (error) {
+                console.error('Error sending to Google Sheets:', error);
+            }
+
+            // Send email
+            try {
+                const emailForm = document.createElement('form');
+                emailForm.method = 'POST';
+                emailForm.action = 'https://formsubmit.co/humayunshakil1995@gmail.com';
+                emailForm.target = '_blank';
+
+                const fields = {
+                    '_subject': '🏥 New Appointment Booking',
+                    '_template': 'table',
+                    '_captcha': 'false',
+                    'Serial_Number': serial,
+                    'Patient_Name': appointment.name,
+                    'Phone_Number': appointment.phone,
+                    'Chamber': appointment.chamberName,
+                    'Appointment_Date': new Date(appointment.date).toLocaleDateString('en-GB'),
+                    'Appointment_Time': formatTime(appointment.time),
+                    'Reason_for_Visit': appointment.reason || 'N/A'
+                };
+
+                for (const [key, value] of Object.entries(fields)) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    emailForm.appendChild(input);
+                }
+
+                document.body.appendChild(emailForm);
+                emailForm.submit();
+                document.body.removeChild(emailForm);
+            } catch (error) {
+                console.error('Error sending email:', error);
+            }
+
+            appointments.push(appointment);
+            saveAppointments();
+            renderAppointments();
+            updateTimeSlots();
+
+            document.getElementById('loading').style.display = 'none';
+
+            this.reset();
+            document.getElementById('chamber').dispatchEvent(new Event('change'));
+            
+            alert(`✅ Appointment Confirmed!\n\nSerial Number: ${serial}\nChamber: ${appointment.chamberName}\nDate: ${new Date(date).toLocaleDateString('en-GB')}\nTime: ${formatTime(time)}\n\n✉️ Email confirmation will be sent shortly.\n📊 Data saved to Google Sheets.`);
+        });
+
+        function renderAppointments() {
+            const listContainer = document.getElementById('appointmentList');
+
+            if (appointments.length === 0) {
+                listContainer.innerHTML = '<div class="empty-state">No appointments booked yet</div>';
+                return;
+            }
+
+            const sortedAppointments = [...appointments].sort((a, b) => {
+                const dateCompare = new Date(b.date) - new Date(a.date);
+                if (dateCompare !== 0) return dateCompare;
+                return b.time.localeCompare(a.time);
+            });
+
+            listContainer.innerHTML = sortedAppointments.map(apt => `
+                <div class="appointment-item">
+                    <div class="appointment-header">
+                        <span class="serial-badge">Serial #${apt.serial}</span>
+                    </div>
+                    <div class="appointment-info">
+                        <h3>${apt.name}</h3>
+                        <p>📞 ${apt.phone}</p>
+                        <p>📅 ${new Date(apt.date).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        <p>🕐 ${formatTime(apt.time)}</p>
+                        ${apt.reason ? `<p>💬 ${apt.reason}</p>` : ''}
+                        <span class="chamber-badge">${apt.chamberName}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteAppointment(${apt.id})">Cancel</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteAppointment(id) {
+            if (confirm('Are you sure you want to cancel this appointment?')) {
+                appointments = appointments.filter(apt => apt.id !== id);
+                saveAppointments();
+                renderAppointments();
+                updateTimeSlots();
+            }
+        }
+
+        loadAppointments();
+    </script>
+</body>
+</html>
